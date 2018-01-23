@@ -93,8 +93,7 @@ To figure out how many cars are in each frame and which pixels belong to which c
 #### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
 Some example images to demonstate pipeline is working:
-
- ![png](./images/process_framse.png)
+ ![png](./images/process_frames.png)
 ---
 The final implementation performs very well, identifying the cars in each of the frames with no false positives.
 
