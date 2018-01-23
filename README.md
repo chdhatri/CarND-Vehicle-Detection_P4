@@ -32,14 +32,13 @@ Code for the project is in the Jupyter notebook project4.ipynb
 #### 1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 
 Project conatins 2 datasets `vehicle` and `non-vehicle` images on which we will be extracting the Hog, color, spacial features to train the model in identifying the cars.  Sample dataset images containing car and non cars are below:
-
- ![png][./images/preview.png]
+ ![png](./images/preview.png)
 
 The code for the extratcing  features is contained in the 8th code cell of the IPython notebook (defined in 'extract_features' function) . Based on the flags spatial, color and HOG features were extracted. 
 
 Code for extracting HOG features was defined in 5th code cell. I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
 
- ![png][./images/hog.png]
+ ![png](./images/hog.png)
 
 
 
@@ -72,32 +71,32 @@ This method performs the prediction based on the fed HOG features and returns li
 
 The image below shows the first attempt at using find_cars on one of the test images, using a single window size:
 
- ![png][./images/findcars.png]
+ ![png](./images/findcars.png)
 
 
 I explored several options with multiple scales and window positions(y start and stop positions), with various overlaps in the X and Y directions.
 
 The images below show the multiscale sliding window search by taking different scales, small (1x), medium (1.5x, 2x), and large (3x) windows: 
- ![png][./images/slidewindow1.png]
- ![png][./images/slidewindow2.png]
+ ![png](./images/slidewindow1.png)
+ ![png](./images/slidewindow2.png)
 
 Below image with multiple bounding boxes reports positive detections. But we can notice that multiple overlapping detections exist for each of the two vehicles. 
- ![png][./images/combined_slidewindow.png]
+ ![png](./images/combined_slidewindow.png)
 
 To remove the duplicate detections and false positives , we will build a heat-map and thresholdfrom these detections in order to combine overlapping detections and remove false positives.The 'add_heat' function increments the pixel value (referred to as "heat") to (+=1) for all pixels within windows where a positive detection are reported by the classifier. The below image is the resulting heatmap from the detections in the image above:
- ![png][./images/heatmap.png]
+ ![png](./images/heatmap.png)
 
 A threshold is applied to the heatmap to reject the false positives. The result is below:
- ![png][./images/heatThresh.png]
+ ![png](./images/heatThresh.png)
 
 To figure out how many cars are in each frame and which pixels belong to which cars,scipy.ndimage.measurements.label() function was called.
- ![png][./images/labels.png]
+ ![png](./images/labels.png)
 
 #### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
 Some example images to demonstate pipeline is working:
 
- ![png][./images/process_framse.png]
+ ![png](./images/process_framse.png)
 ---
 The final implementation performs very well, identifying the cars in each of the frames with no false positives.
 
@@ -106,7 +105,7 @@ The original classifier used HOG features alone and achieved a test accuracy of 
 ### Video Implementation
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./project_video_out.mp4)
 
 
 #### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
