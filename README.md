@@ -94,7 +94,7 @@ To figure out how many cars are in each frame and which pixels belong to which c
 
 Some example images to demonstate pipeline is working:
 
-  ![png](./images/process_frames.png)
+  ![png](./images/final_frames.png)
 
 The final implementation performs very well, identifying the cars in each of the frames with no false positives.
 
