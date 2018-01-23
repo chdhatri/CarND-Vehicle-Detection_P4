@@ -34,9 +34,9 @@ Code for the project is in the Jupyter notebook project4.ipynb
 Project contains 2 datasets, `vehicle` and `non-vehicle` images, on which we will be extracting the Hog, color, spacial features to train the classifier in identifying the vehicles.  Sample dataset images containing car and non cars are below:
  ![png](./images/preview.png)
 
-The code for the extratcing  features is contained in the 8th code cell of the IPython notebook (defined in 'extract_features' function) . Based on the flags and parameters, 'spatial, color and HOG' features were extracted. 
+The code for the extratcing  features is contained in the 8th code cell of the IPython notebook (defined in 'extract_features' function) . Based on the flags and parameters, `spatial, color and HOG` features were extracted. 
 
-Code for extracting HOG features was defined in 5th code cell. I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
+Code for extracting HOG features was defined in 5th code cell in `get_hog_features` function which takes in color space and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`). Below is the sample output of the HOG images :
 
  ![png](./images/hog.png)
 
@@ -64,17 +64,15 @@ I trained the the linear SVM with the default classifier parameters and passing 
 
 #### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
-I implemented a sliding window search using the find_cars function in the notebook. This function was adapted from the lesson material.
-This method instead of extracting HG features individually on each window it does extract on entire/part of the image. These full-image features are subsampled according to the size of the window and then fed to the classifier. 
+I implemented a sliding window search using the `find_cars` function in the notebook which was adapted from the lessons.
+
+This method instead of extracting HOG features individually on each window, it extracts features on entire/part of the image. These full/partial-image features are subsampled according to the size of the window and then fed in to the classifier. 
 
 This method performs the prediction based on the fed HOG features and returns list of rectangle windows drawn on to the positive predictions.
 
 The image below shows the first attempt at using find_cars on one of the test images, using a single window size:
 
  ![png](./images/findcars.png)
-
-
-I explored several options with multiple scales and window positions(y start and stop positions), with various overlaps in the X and Y directions.
 
 The images below show the multiscale sliding window search by taking different scales, small (1x), medium (1.5x, 2x), and large (3x) windows: 
  ![png](./images/slidewindow1.png)
@@ -83,7 +81,7 @@ The images below show the multiscale sliding window search by taking different s
 Below image with multiple bounding boxes reports positive detections. But we can notice that multiple overlapping detections exist for each of the two vehicles. 
  ![png](./images/combined_slidewindow.png)
 
-To remove the duplicate detections and false positives , we will build a heat-map and thresholdfrom these detections in order to combine overlapping detections and remove false positives.The 'add_heat' function increments the pixel value (referred to as "heat") to (+=1) for all pixels within windows where a positive detection are reported by the classifier. The below image is the resulting heatmap from the detections in the image above:
+To remove the duplicate detections and false positives , I built a heat-map and threshold, in order to remove overlapping detections and  false positives. The 'add_heat' function increments the pixel value (referred to as "heat") to (+=1) for all pixels within windows where a positive detection are reported by the classifier. The below image is the resulting heatmap from the detections in the image above:
  ![png](./images/heatmap.png)
 
 A threshold is applied to the heatmap to reject the false positives. The result is below:
@@ -100,7 +98,7 @@ Some example images to demonstate pipeline is working:
 ---
 The final implementation performs very well, identifying the cars in each of the frames with no false positives.
 
-The original classifier used HOG features alone and achieved a test accuracy of 96.28%. I added spatial and color features to the original hog features and changed the channel to YUV channels whihc increased the accuracy to 98.40%,with a cost of increase in execution time. However, changing the pixels_per_cell parameter from 8 to 16 produced a roughly ten-fold increase in execution speed with minimal cost to accuracy.
+The original classifier used HOG features alone and achieved a test accuracy of 96.28%. I added spatial and color features to the original hog features and changed the channel to YUV channels, the accuracy went up to 98.40%, with a cost of increase in execution time. However, changing the pixels_per_cell parameter from 8 to 16 produced a roughly ten-fold increase in execution speed with minimal cost to accuracy to 99.1%.
 
 ### Video Implementation
 
@@ -117,15 +115,15 @@ The code for processing frames of video is identical to the code for processing 
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Problems:
-  * Accuracy detection.
-  * Speed of execution
-  * False positives
- The above first two where the most challenging factors of this project. Having high accuracy with less execution time was quite challenging, these could be soloved with more intelligent tracking strategies.
+ Problems:
+   * Accuracy detection.
+   * Speed of execution
+   * False positives
+  The above first two where the most challenging factors of this project. Having high accuracy with less execution time was quite challenging, these could be soloved with more intelligent tracking strategies.
  
-Even after optimizimg the code by processing and storing previous frames, still false positives were identified. This could be because of the vehicle positions changed significantly from one frame to the other and there was oncoming traffic and distance cars. These problems may be can be removed with high accuracy classifiers or using deep neural nets which can be done as future step.
+ Even after optimizimg the code by processing and storing previous frames, still false positives were identified. This could be because of the vehicle positions changed significantly from one frame to the other and there was oncoming traffic and distance cars. These problems may be can be removed with high accuracy classifiers or using deep neural nets which can be done as future step.
 
-Pipeline Failure: 
+ Pipeline Failure: 
 
    * lighting and environmental conditions might also play a role  
    * oncoming cars are an issue, as well as distant cars as smaller window scales are likely to have more false positives
