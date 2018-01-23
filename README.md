@@ -93,8 +93,9 @@ To figure out how many cars are in each frame and which pixels belong to which c
 #### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
 Some example images to demonstate pipeline is working:
- ![png](./images/process_frames.png)
----
+
+  ![png](./images/process_frames.png)
+
 The final implementation performs very well, identifying the cars in each of the frames with no false positives.
 
 The original classifier used HOG features alone and achieved a test accuracy of 96.28%. I added spatial and color features to the original hog features and changed the channel to YUV channels, the accuracy went up to 98.40%, with a cost of increase in execution time. However, changing the pixels_per_cell parameter from 8 to 16 produced a roughly ten-fold increase in execution speed with minimal cost to accuracy to 99.1%.
