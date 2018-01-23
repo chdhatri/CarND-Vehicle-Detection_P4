@@ -99,7 +99,7 @@ Some example images to demonstate pipeline is working:
 
  ![png][./images/process_framse.png]
 ---
-The final implementation performs very well, identifying the near-field vehicles in each of the images with no false positives.
+The final implementation performs very well, identifying the cars in each of the frames with no false positives.
 
 The original classifier used HOG features alone and achieved a test accuracy of 96.28%. I added spatial and color features to the original hog features and changed the channel to YUV channels whihc increased the accuracy to 98.40%,with a cost of increase in execution time. However, changing the pixels_per_cell parameter from 8 to 16 produced a roughly ten-fold increase in execution speed with minimal cost to accuracy.
 
@@ -111,23 +111,23 @@ Here's a [link to my video result](./project_video.mp4)
 
 #### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
 
-The code for processing frames of video is contained in the cell titled "Pipeline for Processing Video Frames" and is identical to the code for processing a single image described above, with the exception of storing the detections (returned by find_cars) from the previous 15 frames of video using the prev_rects parameter from a class called Vehicle_Detect. Rather than performing the heatmap/threshold/label steps for the current frame's detections, the detections for the past 15 frames are combined and added to the heatmap and the threshold for the heatmap is set to 1 + len(det.prev_rects)//2 (one more than half the number of rectangle sets contained in the history) - this value was found to perform best empirically (rather than using a single scalar, or the full number of rectangle sets in the history).
-
-I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
-
-Here's an example result showing the heatmap from a series of frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
+The code for processing frames of video is identical to the code for processing a single image, except it stores the detections of the vehicles returned by find_cars  This is defined in the class Vehicle_Detect, where add_rects, stores only last 12 frames and filters rest. Instead of performing the heatmap on the current frame's detections, the detections was done for the past 12 frames and the results are combined and added to the heatmap and the threshold. I used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap and corresponded each blob to a car. 
 
 
 ### Discussion
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-The problems that I faced while implementing this project were mainly concerned with detection accuracy. Balancing the accuracy of the classifier with execution speed was crucial. Scanning 190 windows using a classifier that achieves 98% accuracy should result in around 4 misidentified windows per frame. Of course, integrating detections from previous frames mitigates the effect of the misclassifications, but it also introduces another problem: vehicles that significantly change position from one frame to the next (e.g. oncoming traffic) will tend to escape being labeled. Producing a very high accuracy classifier and maximizing window overlap might improve the per-frame accuracy to the point that integrating detections from previous frames is unnecessary (and oncoming traffic is correctly labeled), but it would also be far from real-time without massive processing power.
+Problems:
+  * Accuracy detection.
+  * Speed of execution
+  * False positives
+ The above first two where the most challenging factors of this project. Having high accuracy with less execution time was quite challenging, these could be soloved with more intelligent tracking strategies.
+ 
+Even after optimizimg the code by processing and storing previous frames, still false positives were identified. This could be because of the vehicle positions changed significantly from one frame to the other and there was oncoming traffic and distance cars. These problems may be can be removed with high accuracy classifiers or using deep neural nets which can be done as future step.
 
-The pipeline is probably most likely to fail in cases where vehicles (or the HOG features thereof) don't resemble those in the training dataset, but lighting and environmental conditions might also play a role (e.g. a white car against a white background). As stated above, oncoming cars are an issue, as well as distant cars (as mentioned earlier, smaller window scales tended to produce more false positives, but they also did not often correctly label the smaller, distant cars).
+Pipeline Failure: 
 
-I believe that the best approach, given plenty of time to pursue it, would be to combine a very high accuracy classifier with high overlap in the search windows. The execution cost could be offset with more intelligent tracking strategies, such as:
+   * lighting and environmental conditions might also play a role  
+   * oncoming cars are an issue, as well as distant cars as smaller window scales are likely to have more false positives
 
-determine vehicle location and speed to predict its location in subsequent frames
-begin with expected vehicle locations and nearest (largest scale) search areas, and preclude overlap and redundant detections from smaller scale search areas to speed up execution
-use a convolutional neural network, to preclude the sliding window search altogether
