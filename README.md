@@ -31,10 +31,10 @@ Code for the project is in the Jupyter notebook project4.ipynb
 
 #### 1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 
-Project conatins 2 datasets `vehicle` and `non-vehicle` images on which we will be extracting the Hog, color, spacial features to train the model in identifying the cars.  Sample dataset images containing car and non cars are below:
+Project contains 2 datasets, `vehicle` and `non-vehicle` images, on which we will be extracting the Hog, color, spacial features to train the classifier in identifying the vehicles.  Sample dataset images containing car and non cars are below:
  ![png](./images/preview.png)
 
-The code for the extratcing  features is contained in the 8th code cell of the IPython notebook (defined in 'extract_features' function) . Based on the flags spatial, color and HOG features were extracted. 
+The code for the extratcing  features is contained in the 8th code cell of the IPython notebook (defined in 'extract_features' function) . Based on the flags and parameters, 'spatial, color and HOG' features were extracted. 
 
 Code for extracting HOG features was defined in 5th code cell. I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
 
