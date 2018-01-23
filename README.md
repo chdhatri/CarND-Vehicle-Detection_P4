@@ -31,13 +31,19 @@ Code for the project is in the Jupyter notebook project4.ipynb
 
 #### 1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 
-I started by reading in all the `vehicle` and `non-vehicle` images.  Sample images of cars and noncars dataset are below:
+Project conatins 2 datasets `vehicle` and `non-vehicle` images on which we will be extracting the Hog, color, spacial features to train the model in identifying the cars.  Sample dataset images containing car and non cars are below:
 
-![png][preview.png]
+![png][./images/preview.png]
 
-The code for the HOG step is contained in the 5th code cell of the IPython notebook. 
+The code for the extratcing  features is contained in the 8th code cell of the IPython notebook (defined in 'extract_features' function) . Based on the flags spatial, color and HOG features were extracted. 
 
-I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
+Code for extracting HOG features was defined in 5th code cell. I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
+
+![png][./images/hog.png]
+
+
+
+#### 2. Explain how you settled on your final choice of HOG parameters.
 
 Here is an example using the `YUV` color space and HOG parameters:
   * color_space = 'YUV'
@@ -49,54 +55,54 @@ Here is an example using the `YUV` color space and HOG parameters:
   * hog_channel='ALL'
 
 
-![png][hog.png]
-
-#### 2. Explain how you settled on your final choice of HOG parameters.
-
-I settled on my final choice of HOG parameters based upon the performance of the SVM classifier produced using them. I considered not only the accuracy with which the classifier made predictions on the test dataset, but also the speed at which the classifier is able to make predictions. There is a balance to be struck between accuracy and speed of the classifier, and my strategy was to bias toward speed first, and achieve as close to real-time predictions as possible, and then pursue accuracy if the detection pipeline were not to perform satisfactorily.
-
-The final parameters chosen were those labeled "configuration 24" in the table above: YUV colorspace, 11 orientations, 16 pixels per cell, 2 cells per block, and ALL channels of the colorspace. The classifier performance of each of the configurations from the table above are summarized in the table below:
-
+Final choice of HOG parameters were based on the performance of the SVM classifier predictions and the speed at which the classifier is able to make predictions.
 
 
 #### 3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
-In the section titled "Train a Classifier" I trained a linear SVM with the default classifier parameters and using HOG features alone (I did not use spatial intensity or channel intensity histogram features) and was able to achieve a test accuracy of 98.17%.
+I trained the the linear SVM with the default classifier parameters and passing HOG, spatial and color channel features. I was able to acheive a test accuracy of 
 
 ### Sliding Window Search
 
 #### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
-In the section titled "Method for Using Classifier to Detect Cars in an Image" I adapted the method find_cars from the lesson materials. The method combines HOG feature extraction with a sliding window search, but rather than perform feature extraction on each window individually which can be time consuming, the HOG features are extracted for the entire image (or a selected portion of it) and then these full-image features are subsampled according to the size of the window and then fed to the classifier. The method performs the classifier prediction on the HOG features for each window region and returns a list of rectangle objects corresponding to the windows that generated a positive ("car") prediction.
+I implemented a sliding window search using the find_cars function in the notebook. This function was adapted from the lesson material.
+This method instead of extracting HG features individually on each window it does extract on entire/part of the image. These full-image features are subsampled according to the size of the window and then fed to the classifier. 
+
+This method performs the prediction based on the fed HOG features and returns list of rectangle windows drawn on to the positive predictions.
 
 The image below shows the first attempt at using find_cars on one of the test images, using a single window size:
 
+![png][./images/findcars.png]
 
 
-![alt text][image3]
+I explored several options with multiple scales and window positions(y start and stop positions), with various overlaps in the X and Y directions.
 
-I explored several configurations of window sizes and positions, with various overlaps in the X and Y directions. The following four images show the configurations of all search windows in the final implementation, for small (1x), medium (1.5x, 2x), and large (3x) windows:
+The images below show the multiscale sliding window search by taking different scales, small (1x), medium (1.5x, 2x), and large (3x) windows: 
+![png][./images/slidewindow1.png]
+![png][./images/slidewindow2.png]
 
-I explored several configurations of window sizes and positions, with various overlaps in the X and Y directions. The following four images show the configurations of all search windows in the final implementation, for small (1x), medium (1.5x, 2x), and large (3x) windows:
+Below image with multiple bounding boxes reports positive detections. But we can notice that multiple overlapping detections exist for each of the two vehicles. 
+![png][./images/combined_slidewindow.png]
 
-Because a true positive is typically accompanied by several positive detections, while false positives are typically accompanied by only one or two detections, a combined heatmap and threshold is used to differentiate the two. The add_heat function increments the pixel value (referred to as "heat") of an all-black image the size of the original image at the location of each detection rectangle. Areas encompassed by more overlapping rectangles are assigned higher levels of heat. The following image is the resulting heatmap from the detections in the image above:
+To remove the duplicate detections and false positives , we will build a heat-map and thresholdfrom these detections in order to combine overlapping detections and remove false positives.The 'add_heat' function increments the pixel value (referred to as "heat") to (+=1) for all pixels within windows where a positive detection are reported by the classifier. The below image is the resulting heatmap from the detections in the image above:
+![png][./images/heatmap.png]
 
-A threshold is applied to the heatmap (in this example, with a value of 1), setting all pixels that don't exceed the threshold to zero. The result is below:
+A threshold is applied to the heatmap to reject the false positives. The result is below:
+![png][./images/heatThresh.png]
 
-The scipy.ndimage.measurements.label() function collects spatially contiguous areas of the heatmap and assigns each a label:
-
-And the final detection area is set to the extremities of each identified label:
+To figure out how many cars are in each frame and which pixels belong to which cars,scipy.ndimage.measurements.label() function was called.
+![png][./images/labels.png]
 
 #### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
-Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
+Some example images to demonstate pipeline is working:
 
-![alt text][image4]
+![png][./images/process_framse.png]
 ---
 The final implementation performs very well, identifying the near-field vehicles in each of the images with no false positives.
 
-The first implementation did not perform as well, so I began by optimizing the SVM classifier. The original classifier used HOG features from the YUV Y channel only, and achieved a test accuracy of 96.28%. Using all three YUV channels increased the accuracy to 98.40%, but also tripled the execution time. However, changing the pixels_per_cell parameter from 8 to 16 produced a roughly ten-fold increase in execution speed with minimal cost to accuracy.
+The original classifier used HOG features alone and achieved a test accuracy of 96.28%. I added spatial and color features to the original hog features and changed the channel to YUV channels whihc increased the accuracy to 98.40%,with a cost of increase in execution time. However, changing the pixels_per_cell parameter from 8 to 16 produced a roughly ten-fold increase in execution speed with minimal cost to accuracy.
 
-Other optimization techniques included changes to window sizing and overlap as described above, and lowering the heatmap threshold to improve accuracy of the detection (higher threshold values tended to underestimate the size of the vehicle).
 ### Video Implementation
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
@@ -111,19 +117,6 @@ I recorded the positions of positive detections in each frame of the video.  Fro
 
 Here's an example result showing the heatmap from a series of frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
 
-### Here are six frames and their corresponding heatmaps:
-
-![alt text][image5]
-
-### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap from all six frames:
-![alt text][image6]
-
-### Here the resulting bounding boxes are drawn onto the last frame in the series:
-![alt text][image7]
-
-
-
----
 
 ### Discussion
 
